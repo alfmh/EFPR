@@ -1,0 +1,7 @@
+Change Component Designator: OldDesignator=EFPR-HPT v1.2.0 NewDesignator=EFPR-HPT v1.2
+Added Component: Designator=CN1(1719770003)
+Added Pin To Net: NetName=GND Pin=CN1-1
+Added Pin To Net: NetName=V_IN Pin=CN1-2
+Added Pin To Net: NetName=ENABLE_IN Pin=CN1-3
+Added Member To Class: ClassName=EFPR-HPTECH_V1.2 Member=Component CN1 1719770003
+Added Member To Class: ClassName=EFPR-HPTECH_V1.2 Member=Component EFPR-HPT v1.2 Lo_PCB_Name_15mm

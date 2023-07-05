@@ -1,0 +1,14 @@
+Project Outputs Generation Report
+---------------------------------
+Start Output Generation At 8:22:25 On 14/10/2022
+
+Output: Pick Place
+Type  : Pick Place
+From  : Variant [[No Variations]] of PCB Document [EFPR-HPTECH_V1.2.CSPcbDoc]
+   Generated File[Pick Place for EFPR-HPTECH_V1.2.csv]
+
+
+Files Generated   : 1
+Documents Printed : 0
+
+Finished Output Generation At 8:22:25 On 14/10/2022

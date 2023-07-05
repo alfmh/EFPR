@@ -1,0 +1,4 @@
+Removed Pin From Net: NetName=V_IN_SENSE Pin=U2-4
+Added Pin To Net: NetName=V_IN_SENSE Pin=U2-9
+Added Member To Class: ClassName=fp Member=Component D1
+Added Room: Name=fp

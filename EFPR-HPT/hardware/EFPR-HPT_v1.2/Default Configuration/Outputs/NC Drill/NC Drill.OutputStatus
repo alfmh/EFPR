@@ -1,0 +1,6 @@
+[OutputStatus]
+OutputFileNames0=\\192.168.5.73\Quaternium_NAS\1 - HYBRIX DEVELOPMENT - aircraft\1 - HYBRiX 21\3-Electronics\Hardware\EFPR\EFPR-HPT_v1.2\Default Configuration\Outputs\NC Drill\EFPR-HPTECH_V1.2.TXT
+OutputFileNames1=\\192.168.5.73\Quaternium_NAS\1 - HYBRIX DEVELOPMENT - aircraft\1 - HYBRiX 21\3-Electronics\Hardware\EFPR\EFPR-HPT_v1.2\Default Configuration\Outputs\NC Drill\EFPR-HPTECH_V1.2.LDP
+OutputFileNames2=\\192.168.5.73\Quaternium_NAS\1 - HYBRIX DEVELOPMENT - aircraft\1 - HYBRiX 21\3-Electronics\Hardware\EFPR\EFPR-HPT_v1.2\Default Configuration\Outputs\NC Drill\EFPR-HPTECH_V1.2.DRR
+Success=1
+HasRun=1

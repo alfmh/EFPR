@@ -1,0 +1,19 @@
+---------------------------------------------------------------------------
+NCDrill File Report For: EFPR-HPTECH_V1.2.CSPcbDoc   14/10/2022  8:22:25
+---------------------------------------------------------------------------
+
+Layer Pair : Top Layer to Bottom Layer
+ASCII RoundHoles File : EFPR-HPTECH_V1.2.TXT
+
+Tool         Hole Size           Hole Type     Hole Count Plated       Tool Travel
+---------------------------------------------------------------------------
+T1        11.81mil (0.29997mm)     Round          7                0.26 Inch (6.73 mm)
+T2        12mil (0.3048mm)         Round          16               4.07 Inch (103.35 mm)
+T3        19.68mil (0.49987mm)     Round          3                0.57 Inch (14.37 mm)
+T4        66.93mil (1.70002mm)     Round          4                3.09 Inch (78.40 mm)
+T5        133.86mil (3.40004mm)    Round          2         NPTH   0.31 Inch (7.88 mm)
+T6        625.98mil (15.89989mm)   Round          1         NPTH   0.00 Inch (0.00 mm)
+---------------------------------------------------------------------------
+Totals                                            33               8.30 Inch (210.73 mm)
+
+Total Processing Time (hh:mm:ss) : 00:00:00

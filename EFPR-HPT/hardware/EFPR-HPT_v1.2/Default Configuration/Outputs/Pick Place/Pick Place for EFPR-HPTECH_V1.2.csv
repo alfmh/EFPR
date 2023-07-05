@@ -1,0 +1,20 @@
++,Footprint,Mid X,Mid Y,Ref X,Ref Y,Pad X,Pad Y,Layer,Rotation,Comment
+R3,0603s,20mm,7.5mm,20mm,7.5mm,20.6858mm,7.5mm,Bottom,180,100R
+CN1,1719770003,24.7mm,0mm,24.7mm,0mm,19.355mm,-2.54mm,Bottom,270,1719770003
+R7,0603s,-8.001mm,-8.382mm,-8.001mm,-8.382mm,-8.6868mm,-8.382mm,Top,0,10.2K 0.1%
+R6,0603s,-5.588mm,-8.382mm,-5.588mm,-8.382mm,-4.9022mm,-8.382mm,Top,180,40.2K 0.1%
+D1,SOD323_SC76,25mm,-7mm,25mm,-7mm,23.95mm,-7mm,Bottom,0,diode
+R5,0603s,13.97mm,4.445mm,13.97mm,4.445mm,13.2842mm,4.445mm,Bottom,0,10K
+D2,SOD323_SC76,11.43mm,2.794mm,11.43mm,2.794mm,11.43mm,1.744mm,Bottom,90,diode
+C6,0603s,-13.208mm,-4.699mm,-13.208mm,-4.699mm,-13.208mm,-4.0132mm,Top,270,470pF
+Q1,SOT1210,16.891mm,6.096mm,16.891mm,6.096mm,15.916mm,7.631mm,Bottom,0,BUK9M15-40HX
+R4,0603s,22.4mm,7.5mm,22.4mm,7.5mm,23.0858mm,7.5mm,Bottom,180,10K
+U4,SOT23-5,11.049mm,6.223mm,11.049mm,6.223mm,10.099mm,7.423mm,Bottom,270,TLV171
+R2,0603s,14.5mm,6.5mm,14.5mm,6.5mm,14.5mm,7.1858mm,Bottom,270,3K3
+R1,0603s,13.3mm,6.5mm,13.3mm,6.5mm,13.3mm,5.8142mm,Bottom,90,2K2
+C5,0603s,10.033mm,2.794mm,10.033mm,2.794mm,10.033mm,2.1082mm,Bottom,90,0.1uF
+C4,C0805NP,14.605mm,2.159mm,14.605mm,2.159mm,13.655mm,2.159mm,Bottom,0,10uF 16V
+C3,C1206,18mm,-7mm,18mm,-7mm,16.6mm,-7mm,Bottom,0,22uF 10V
+U3,SOT223_REG,12.954mm,-3.556mm,12.954mm,-3.556mm,10.654mm,-0.506mm,Bottom,270,LM1117-5
+C2,0603s,-13.208mm,-1.524mm,-13.208mm,-1.524mm,-13.208mm,-2.2098mm,Top,90,0.01uF
+C1,0805S,-13.208mm,2.667mm,-13.208mm,2.667mm,-13.208mm,3.617mm,Top,270,1uF

@@ -1,0 +1,2 @@
+Remove Pin=CN1-3 From Net=ENABLE_IN
+Change Component Designator: OldDesignator=EFPR-HPT v1.2 NewDesignator=EFPR-HPT v1.2.0

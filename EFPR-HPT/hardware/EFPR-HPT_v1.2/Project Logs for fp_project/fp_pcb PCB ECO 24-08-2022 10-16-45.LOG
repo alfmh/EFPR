@@ -1,0 +1,72 @@
+Removed Pin From Net: NetName=5V Pin=C3-1
+Removed Pin From Net: NetName=VIN Pin=CN1-1
+Removed Pin From Net: NetName=GND Pin=CN1-2
+Removed Pin From Net: NetName=PWM Pin=U2-1
+Removed Pin From Net: NetName=DP_SENSE Pin=U2-2
+Removed Pin From Net: NetName=5V Pin=U3-2
+Removed Pin From Net: NetName=5V Pin=U3-2
+Change Component Comment : Designator=D1 Old Comment=* New Comment=
+Change Component Designator: OldDesignator=D1 NewDesignator=D2
+Change component parameters: Designator = "Q1" ("Q1"); Footprint = "SOT1210"; UniqueID = "\VRYCNQGB" ("\VRYCNQGB")
+Change component parameters (AddParameter): Name = "PartNumber"; Value = "BUK9M15-40HX"; VariantName = "[No Variations]"
+Change component parameters: Designator = "U1" ("U1"); Footprint = "MPX5700D"; UniqueID = "\RSJWMPHB" ("\RSJWMPHB")
+Change component parameters (AddParameter): Name = "PartNumber"; Value = "MPX5700D"; VariantName = "[No Variations]"
+Change component parameters: Designator = "U3" ("U3"); Footprint = "SOT223_REG"; UniqueID = "\MDYHCALM" ("\MDYHCALM")
+Change component parameters (AddParameter): Name = "PartNumber"; Value = "LM1117-5"; VariantName = "[No Variations]"
+Change component parameters: Designator = "U4" ("U4"); Footprint = "SOT23-5"; UniqueID = "\FEYYDLJO" ("\FEYYDLJO")
+Change component parameters (AddParameter): Name = "PartNumber"; Value = "TLV171"; VariantName = "[No Variations]"
+Change component parameters: Designator = "C1" ("C1"); Footprint = "0805S"; UniqueID = "\FVHKYMMK" ("\FVHKYMMK")
+Change component parameters (AddParameter): Name = "VALUE"; Value = "1uF"; VariantName = "[No Variations]"
+Change component parameters: Designator = "C2" ("C2"); Footprint = "0603s"; UniqueID = "\MBTWQXIM" ("\MBTWQXIM")
+Change component parameters (AddParameter): Name = "VALUE"; Value = "0.01uF"; VariantName = "[No Variations]"
+Change component parameters: Designator = "C3" ("C3"); Footprint = "C1206"; UniqueID = "\VJNYQCIP" ("\VJNYQCIP")
+Change component parameters (AddParameter): Name = "VALUE"; Value = "22uF 10V"; VariantName = "[No Variations]"
+Change component parameters: Designator = "C4" ("C4"); Footprint = "C0805NP"; UniqueID = "\XQAWRGKM" ("\XQAWRGKM")
+Change component parameters (AddParameter): Name = "VALUE"; Value = "10uF 16V"; VariantName = "[No Variations]"
+Change component parameters: Designator = "C5" ("C5"); Footprint = "0603s"; UniqueID = "\VNLAETKK" ("\VNLAETKK")
+Change component parameters (AddParameter): Name = "VALUE"; Value = "0.1uF"; VariantName = "[No Variations]"
+Change component parameters: Designator = "C6" ("C6"); Footprint = "0603s"; UniqueID = "\XVPOTYAM" ("\XVPOTYAM")
+Change component parameters (AddParameter): Name = "VALUE"; Value = "470pF"; VariantName = "[No Variations]"
+Change component parameters: Designator = "D1" ("D1"); Footprint = "SOD323_SC76"; UniqueID = "\DBAHLLBR" ("\DBAHLLBR")
+Change component parameters (AddParameter): Name = "Value"; Value = ""; VariantName = "[No Variations]"
+Change component parameters: Designator = "R1" ("R1"); Footprint = "0603s"; UniqueID = "\AOKDSYBO" ("\AOKDSYBO")
+Change component parameters (AddParameter): Name = "Value"; Value = "2K2"; VariantName = "[No Variations]"
+Change component parameters: Designator = "R2" ("R2"); Footprint = "0603s"; UniqueID = "\OSNVSFIG" ("\OSNVSFIG")
+Change component parameters (AddParameter): Name = "Value"; Value = "3K3"; VariantName = "[No Variations]"
+Change component parameters: Designator = "R3" ("R3"); Footprint = "0603s"; UniqueID = "\ECBGQHQG" ("\ECBGQHQG")
+Change component parameters (AddParameter): Name = "Value"; Value = "100R"; VariantName = "[No Variations]"
+Change component parameters: Designator = "R4" ("R4"); Footprint = "0603s"; UniqueID = "\CCRKJSBM" ("\CCRKJSBM")
+Change component parameters (AddParameter): Name = "Value"; Value = "10K"; VariantName = "[No Variations]"
+Change component parameters: Designator = "R5" ("R5"); Footprint = "0603s"; UniqueID = "\ABGMJEOV" ("\ABGMJEOV")
+Change component parameters (AddParameter): Name = "Value"; Value = "10K"; VariantName = "[No Variations]"
+Added Component: Designator=D1(SOD323_SC76)
+Add component (AddParameter): Name = "Value"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=R6(0603s)
+Add component (AddParameter): Name = "Value"; Value = "40.2K 0.1%"; VariantName = "[No Variations]"
+Added Component: Designator=R7(0603s)
+Add component (AddParameter): Name = "Value"; Value = "10.2K 0.1%"; VariantName = "[No Variations]"
+Added Pin To Net: NetName=GND Pin=CN1-1
+Added Pin To Net: NetName=VIN Pin=CN1-2
+Added Pin To Net: NetName=5V Pin=D1-K
+Added Pin To Net: NetName=VIN Pin=R6-1
+Added Pin To Net: NetName=GND Pin=R7-1
+Added Pin To Net: NetName=PWM Pin=U2-2
+Added Pin To Net: NetName=DP_SENSE Pin=U2-6
+Change Net Name : Old Net Name=EN New Net Name=ENABLE_IN
+Change Net Name : Old Net Name=FP_OUT New Net Name=FP-_OUT
+Change Net Name : Old Net Name=NetD1_A New Net Name=NetD2_A
+Change Net Name : Old Net Name=PWM New Net Name=PWM_OUT
+Change Net Name : Old Net Name=VIN New Net Name=V_IN
+Added Pin To Net: NetName=NetC3_1 Pin=C3-1
+Added Pin To Net: NetName=NetC3_1 Pin=D1-A
+Added Pin To Net: NetName=NetC3_1 Pin=U3-2
+Added Pin To Net: NetName=NetC3_1 Pin=U3-2
+Added Net: Name=NetC3_1
+Added Pin To Net: NetName=V_IN_SENSE Pin=R6-2
+Added Pin To Net: NetName=V_IN_SENSE Pin=R7-2
+Added Pin To Net: NetName=V_IN_SENSE Pin=U2-4
+Added Net: Name=V_IN_SENSE
+Added Member To Class: ClassName=fp Member=Component D2
+Added Member To Class: ClassName=fp Member=Component R6 40.2K 0.1%
+Added Member To Class: ClassName=fp Member=Component R7 10.2K 0.1%
+Added Room: Name=fp

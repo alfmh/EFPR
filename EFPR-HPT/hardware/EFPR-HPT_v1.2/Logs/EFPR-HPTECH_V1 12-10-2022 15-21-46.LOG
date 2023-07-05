@@ -1,0 +1,5 @@
+Change Component Comment : Designator=D1 Old Comment= New Comment=*
+Change Component Comment : Designator=D2 Old Comment= New Comment=*
+Added Component: Designator=PCB_Name(Logo_Lo_PCB_Name _15mm)
+Change Class Name : Old Net Name=fp New Net Name=EFPR-HPTECH_V1.2
+Added Member To Class: ClassName=EFPR-HPTECH_V1.2 Member=Component PCB_Name Lo_PCB_Name_15mm
