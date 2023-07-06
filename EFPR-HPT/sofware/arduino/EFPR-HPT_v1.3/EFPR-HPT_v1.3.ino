@@ -9,24 +9,8 @@
 ***                                                                  Author: Alfonso Muñoz Hormigo           *** 
 ****************************************************************************************************************
 */
-#include <AutoPID.h>
-#include <TimerTCC0.h>
-#include <TimerTC3.h>
 
-/*
-   MICROCONTROLLER
-*/
-//PINS
-#define V_PS_MEASURE_IN A5
-#define ECU_ENABLE_FP_IN A7
-#define VBAT_SENSE_IN A8
-#define FP_PWM_OUT A1
-//PARAMETERS
-#define ADC_MAX 4095        // 12 bits
-#define VS_uC 3300.0f              // [mV]
-#define VBAT_VOLTAGE_DIVIDER 4.94f // [] -> (10.2k / 50.4k) = 1 / 4.94
-#define FP_ENABLE_THRESHOLD 2000 
-#define PWM_FREQUENCY 120000.0f    // [Hz]
+#include <AutoPID.h>
 
 /*
 *** FUEL PUMP ***
@@ -36,22 +20,35 @@
           - Nominal Voltage: 6 [V]
           - Nominal Pressure: 3.5 [bar]
           - Flow Rate: 190 [ml/min] = 11.4 [l/s]
-*/
-/*  
+
 *** FUEL PRESSURE SENSOR ***
     Analog fuel pressure sensor:
     MPX5700DP  -> Upper limit = 7 [bar] https://www.farnell.com/datasheets/2291495.pdf
     Specs:
           - Sensitivity of the sensor = 6.4 [mV/KPa] at VS = 5 [V]   
-*/
-/*
+
 *** MICROCONTROLLER ***
     Seeeduino XIAO I/O works at 3.3 [V] https://wiki.seeedstudio.com/Seeeduino-XIAO/
     VS = 5 [V]
 */
 
+// *****************************************
+// *** I/O MICROCONTROLLER CONFIGURATION ***
+// *****************************************
+#define V_PS_MEASURE_IN A5
+#define ECU_ENABLE_FP_IN A7
+#define VBAT_SENSE_IN A8
+#define FP_PWM_OUT A1
+
+// ******************************
 // *** PARAMETERS DEFINITIONS ***
-// PRESSURE SENSOR
+// ******************************
+// MICROCONTROLLER
+#define ADC_MAX 4095        // 12 bits
+#define VS_uC 3300.0f              // [mV]
+#define VBAT_VOLTAGE_DIVIDER 4.94f // [] -> (10.2k / 50.4k) = 1 / 4.94
+#define FP_ENABLE_THRESHOLD 2000 
+#define PWM_FREQUENCY 120000.0f    // [Hz]// PRESSURE SENSOR
 #define VS_DOCUMENTATION 5000.0f         // [mV]
 #define PS_SENSIVITY_DOCUMENTATION 6.4f  // [mV/KPa]
 #define PRESSURE_SETPOINT 2.5f           // [bar]
@@ -69,7 +66,9 @@
 #define KI 1.5f  //1.2
 #define KD 0.0f
 
+// *****************
 // *** VARIABLES ***
+// *****************
 double outputMin = (double) OUTPUT_MIN;
 double outputMax = 0.2f * OUTPUT_MAX;
 double pressure, setPoint, output, error;
@@ -77,8 +76,14 @@ float sensivity, pressureBar, vBat, offset;
 uint16_t pwmOut, fpEnable;
 bool ledState = HIGH;
 
+// ***************
+// *** OBJECTS ***
+// ***************
 AutoPID myPID(&pressure, &setPoint, &output, outputMin, outputMax, KP, KI, KD);
 
+// ********************
+// *** MAIN PROGRAM ***
+// ********************
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
