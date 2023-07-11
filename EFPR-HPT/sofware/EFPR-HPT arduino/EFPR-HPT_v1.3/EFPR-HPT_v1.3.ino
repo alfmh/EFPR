@@ -75,6 +75,7 @@ double pressure, setPoint, output, error;
 float sensivity, pressureBar, vBat, offset;
 uint16_t pwmOut, fpEnable;
 bool ledState = HIGH;
+float printSetPoint;
 
 // ***************
 // *** OBJECTS ***
@@ -86,7 +87,7 @@ AutoPID myPID(&pressure, &setPoint, &output, outputMin, outputMax, KP, KI, KD);
 // ********************
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   analogReadResolution(12);
   
@@ -104,7 +105,7 @@ void setup() {
   setPoint = (double)((PRESSURE_SETPOINT * PS_SENSIVITY_DOCUMENTATION * (float)(ADC_MAX)*PS_VOLTAGE_DIVIDER * 100.0f) / VS_uC);
   offset = (double)((PS_OFFSET * PS_SENSIVITY_DOCUMENTATION * (float)(ADC_MAX)*PS_VOLTAGE_DIVIDER * 100.0f) / VS_uC);
 
-  //if pressure is more than 0.5 [bar] below or above setpoint, OUTPUT will be set to min or max respectively
+  // Remove the bang bang control
   myPID.setOutputRange(outputMin, outputMax);
   myPID.setBangBang (NO_BANG_BANG, NO_BANG_BANG);
   //set PID update init interval to 0.1ms
@@ -115,19 +116,22 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   vBat = ((float)(analogRead(VBAT_SENSE_IN)) / (float)(ADC_MAX)) * VS_uC * VBAT_VOLTAGE_DIVIDER;
-  //outputMax = (double)((VFP_MAX / (vBat / 1000.0f)) * (float)(REG_TCC0_PER));
-  outputMax = (double)((VFP_MAX / (vBat / 1000.0f)) * (float)(OUTPUT_MAX));
-  myPID.setOutputRange(outputMin, outputMax);
+
   pressure = analogRead(V_PS_MEASURE_IN) - offset;
   pressureBar = pressure * VS_uC / (ADC_MAX * PS_SENSIVITY_DOCUMENTATION * PS_VOLTAGE_DIVIDER * 100.0);
   
+  outputMax = (double)((VFP_MAX / (vBat / 1000.0f)) * (float)(OUTPUT_MAX));
+  myPID.setOutputRange(outputMin, outputMax);
+ 
   fpEnable = analogRead(ECU_ENABLE_FP_IN);
   if (fpEnable <= FP_ENABLE_THRESHOLD) {
     //Serial.printf("Dentro\r\n");
     myPID.run();
+    printSetPoint = PRESSURE_SETPOINT;
   } else {
     //Serial.printf("Fuera\r\n");
     output = outputMax;
+    printSetPoint = 0.0f;
     myPID.reset();
   }
   
@@ -136,10 +140,11 @@ void loop() {
   else if (output > outputMax)
     output = outputMax;
 
- pwm(FP_PWM_OUT,PWM_FREQUENCY,(uint16_t)(output));
+  pwm(FP_PWM_OUT,PWM_FREQUENCY,(uint16_t)(output));
 
   ledState = ((pressureBar >= (PRESSURE_SETPOINT - 0.1f)) && (pressureBar < (PRESSURE_SETPOINT + 0.1f))) ? LOW : HIGH;
   digitalWrite(LED_BUILTIN, ledState);
 
-  Serial.printf("Pressure: %.2f [bar] | Error: %.2f \r\n", pressureBar, output);
+  //Serial.printf("Pressure: %.2f [bar] | Error: %.2f \r\n", pressureBar, output);
+  Serial.printf("%0.2f;%0.2f", printSetPoint, pressureBar);
 }
