@@ -48,21 +48,22 @@
 #define VS_uC 3300.0f              // [mV]
 #define VBAT_VOLTAGE_DIVIDER 4.94f // [] -> (10.2k / 50.4k) = 1 / 4.94
 #define FP_ENABLE_THRESHOLD 2000 
-#define PWM_FREQUENCY 12000.0f    // [Hz]// PRESSURE SENSOR
+#define PWM_FREQUENCY 120000.0f    // [Hz]// PRESSURE SENSOR
 #define VS_DOCUMENTATION 5000.0f         // [mV]
 #define PS_SENSIVITY_DOCUMENTATION 6.4f  // [mV/KPa]
 #define PRESSURE_SETPOINT 2.5f           // [bar]
-#define PS_OFFSET 0.35f                  // [bar]
+#define PS_OFFSET 0.31f                  // [bar]
 #define PS_VOLTAGE_DIVIDER 0.6f          // [] -> 3.3k / 5.5k = 0.6
+
 // FUEL PUMP
 #define VFP_MAX 6.0f  // [V]
 #define OUTPUT_MIN 0
 #define OUTPUT_MAX 1024 // [] -> 10 bits range 
 
 // PID CONTROL
-#define NO_BANG_BANG 0.0f
-#define KP 1.0f  //1.7
-#define KI 0.0f  //1.2
+#define NO_BANG_BANG -1000.0f
+#define KP 5.0f  //1.7
+#define KI 1.5f  //1.2
 #define KD 0.0f
 
 // *****************
@@ -70,16 +71,16 @@
 // *****************
 double outputMin = (double) OUTPUT_MIN;
 double outputMax = 0.2f * OUTPUT_MAX;
-double pressure, pressureFiltered = 0, setpoint, output, error;
+double pressure, setPoint, output, error;
 float sensivity, pressureBar, vBat, offset;
 uint16_t pwmOut, fpEnable;
 bool ledState = HIGH;
-float printSetpoint;
+float printSetPoint;
 
 // ***************
 // *** OBJECTS ***
 // ***************
-AutoPID myPID(&pressure, &setpoint, &output, outputMin, outputMax, KP, KI, KD);
+AutoPID myPID(&pressure, &setPoint, &output, outputMin, outputMax, KP, KI, KD);
 
 // ********************
 // *** MAIN PROGRAM ***
@@ -101,13 +102,12 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH);
 
-  setpoint = (double)((PRESSURE_SETPOINT * PS_SENSIVITY_DOCUMENTATION * (float)(ADC_MAX)*PS_VOLTAGE_DIVIDER * 100.0f) / VS_uC);
+  setPoint = (double)((PRESSURE_SETPOINT * PS_SENSIVITY_DOCUMENTATION * (float)(ADC_MAX)*PS_VOLTAGE_DIVIDER * 100.0f) / VS_uC);
   offset = (double)((PS_OFFSET * PS_SENSIVITY_DOCUMENTATION * (float)(ADC_MAX)*PS_VOLTAGE_DIVIDER * 100.0f) / VS_uC);
 
   // Remove the bang bang control
   myPID.setOutputRange(outputMin, outputMax);
-  //myPID.setBangBang (0.5);
-
+  myPID.setBangBang (NO_BANG_BANG, NO_BANG_BANG);
   //set PID update init interval to 0.1ms
   myPID.setTimeStep(0.001);
   pwm(FP_PWM_OUT,PWM_FREQUENCY,(uint16_t)(output));
@@ -116,29 +116,23 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   vBat = ((float)(analogRead(VBAT_SENSE_IN)) / (float)(ADC_MAX)) * VS_uC * VBAT_VOLTAGE_DIVIDER;
-  
+
   pressure = analogRead(V_PS_MEASURE_IN) - offset;
   pressureBar = pressure * VS_uC / (ADC_MAX * PS_SENSIVITY_DOCUMENTATION * PS_VOLTAGE_DIVIDER * 100.0);
-
-  outputMax = (double)((VFP_MAX / (vBat / 1000.0f)) * (double)(OUTPUT_MAX));
-  if (outputMax < OUTPUT_MIN)
-    outputMax = OUTPUT_MIN;
-  else if (outputMax > OUTPUT_MAX)
-    outputMax = OUTPUT_MAX;
-
+  
+  outputMax = (double)((VFP_MAX / (vBat / 1000.0f)) * (float)(OUTPUT_MAX));
   myPID.setOutputRange(outputMin, outputMax);
  
   fpEnable = analogRead(ECU_ENABLE_FP_IN);
-  if (fpEnable < FP_ENABLE_THRESHOLD) {
+  if (fpEnable <= FP_ENABLE_THRESHOLD) {
     //Serial.printf("Dentro\r\n");
     myPID.run();
-    //output = 248.24;
-    printSetpoint = PRESSURE_SETPOINT;
+    printSetPoint = PRESSURE_SETPOINT;
   } else {
     //Serial.printf("Fuera\r\n");
-    output = outputMin;
-    printSetpoint = 0.0f;
-    myPID.stop();
+    output = outputMax;
+    printSetPoint = 0.0f;
+    myPID.reset();
   }
   
   if (output < OUTPUT_MIN)
@@ -148,22 +142,9 @@ void loop() {
 
   pwm(FP_PWM_OUT,PWM_FREQUENCY,(uint16_t)(output));
 
-  ledState = ((pressureBar >= (PRESSURE_SETPOINT - 0.01f)) && (pressureBar < (PRESSURE_SETPOINT + 0.01f))) ? LOW : HIGH;
+  ledState = ((pressureBar >= (PRESSURE_SETPOINT - 0.1f)) && (pressureBar < (PRESSURE_SETPOINT + 0.1f))) ? LOW : HIGH;
   digitalWrite(LED_BUILTIN, ledState);
-  //String dataToSend = String(pressureBar) + "|" + String(printSetpoint);
+
   //Serial.printf("Pressure: %.2f [bar] | Error: %.2f \r\n", pressureBar, output);
-  Serial.printf("%.2f|%.2f\r\n", printSetpoint, pressureBar);
-  //Serial.print(sin(i*50.0/360.0));
-  //Serial.print(dataToSend);
-  //send2PC(&dataToSend);
-  //Serial.write(13);
-  //Serial.write(10);
-  delay(1);
+  Serial.printf("%0.2f;%0.2f", printSetPoint, pressureBar);
 }
-
-void send2PC(String* data)
-{
-  byte* byteData = (byte*)(data);
-  Serial.write(byteData, 4);
-}
-
