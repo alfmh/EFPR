@@ -9,9 +9,7 @@
 ***                                                                  Author: Alfonso Muñoz Hormigo           *** 
 ****************************************************************************************************************
 */
-
-#include <AutoPID.h>
-
+  #include <AutoPID.h>
 /*
 *** FUEL PUMP ***
     Magnetic coupled gear pump (seal-less):
@@ -144,7 +142,7 @@ void loop() {
 
   ledState = ((pressureBar >= (PRESSURE_SETPOINT - 0.1f)) && (pressureBar < (PRESSURE_SETPOINT + 0.1f))) ? LOW : HIGH;
   digitalWrite(LED_BUILTIN, ledState);
-
   //Serial.printf("Pressure: %.2f [bar] | Error: %.2f \r\n", pressureBar, output);
-  Serial.printf("%0.2f;%0.2f", printSetPoint, pressureBar);
+  Serial.printf("%0.2f|%0.2f\r\n", printSetPoint, pressureBar);
+
 }
