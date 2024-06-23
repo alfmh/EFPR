@@ -42,11 +42,11 @@
 // *** PARAMETERS DEFINITIONS ***
 // ******************************
 // MICROCONTROLLER
-#define ADC_MAX 4095        // 12 bits
-#define VS_uC 3300.0f              // [mV]
-#define VBAT_VOLTAGE_DIVIDER 4.94f // [] -> (10.2k / 50.4k) = 1 / 4.94
+#define ADC_MAX 4095                     // 12 bits
+#define VS_uC 3300.0f                    // [mV]
+#define VBAT_VOLTAGE_DIVIDER 4.94f       // [] -> (10.2k / 50.4k) = 1 / 4.94
 #define FP_ENABLE_THRESHOLD 2000 
-#define PWM_FREQUENCY 120000.0f    // [Hz]// PRESSURE SENSOR
+#define PWM_FREQUENCY 100000.0f          // [Hz]
 #define VS_DOCUMENTATION 5000.0f         // [mV]
 #define PS_SENSIVITY_DOCUMENTATION 6.4f  // [mV/KPa]
 #define PRESSURE_SETPOINT 2.5f           // [bar]
@@ -54,14 +54,14 @@
 #define PS_VOLTAGE_DIVIDER 0.6f          // [] -> 3.3k / 5.5k = 0.6
 
 // FUEL PUMP
-#define VFP_MAX 6.0f  // [V]
+#define VFP_MAX 5.0f    // [V]
 #define OUTPUT_MIN 0
 #define OUTPUT_MAX 1024 // [] -> 10 bits range 
 
 // PID CONTROL
 #define NO_BANG_BANG -1000.0f
-#define KP 5.0f  //1.7
-#define KI 1.5f  //1.2
+#define KP 1.0f  //1.7
+#define KI 0.0f  //1.2
 #define KD 0.0f
 
 // *****************
@@ -69,7 +69,8 @@
 // *****************
 double outputMin = (double) OUTPUT_MIN;
 double outputMax = 0.2f * OUTPUT_MAX;
-double pressure, setPoint, output, error;
+double setPoint = PRESSURE_SETPONT;
+double pressure, pressureFiltered, output, error;
 float sensivity, pressureBar, vBat, offset;
 uint16_t pwmOut, fpEnable;
 bool ledState = HIGH;
@@ -89,6 +90,7 @@ void setup() {
 
   analogReadResolution(12);
   
+  // I/0 Setup
   pinMode(ECU_ENABLE_FP_IN, INPUT);
   analogWrite(ECU_ENABLE_FP_IN, ADC_MAX);
   pinMode(V_PS_MEASURE_IN, INPUT);
@@ -100,7 +102,7 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH);
 
-  setPoint = (double)((PRESSURE_SETPOINT * PS_SENSIVITY_DOCUMENTATION * (float)(ADC_MAX)*PS_VOLTAGE_DIVIDER * 100.0f) / VS_uC);
+  //setPoint = (double)((PRESSURE_SETPOINT * PS_SENSIVITY_DOCUMENTATION * (float)(ADC_MAX)*PS_VOLTAGE_DIVIDER * 100.0f) / VS_uC);
   offset = (double)((PS_OFFSET * PS_SENSIVITY_DOCUMENTATION * (float)(ADC_MAX)*PS_VOLTAGE_DIVIDER * 100.0f) / VS_uC);
 
   // Remove the bang bang control
