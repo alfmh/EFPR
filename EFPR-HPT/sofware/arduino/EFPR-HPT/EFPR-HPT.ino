@@ -10,6 +10,7 @@
 ****************************************************************************************************************
 */
   #include <AutoPID.h>
+  #include <FIR.h>
 /*
 *** FUEL PUMP ***
     Magnetic coupled gear pump (seal-less):
@@ -56,7 +57,28 @@
 // FUEL PUMP
 #define VFP_MAX 5.0f    // [V]
 #define OUTPUT_MIN 0
-#define OUTPUT_MAX 1024 // [] -> 10 bits range 
+#define OUTPUT_MAX 1024 // [] -> 10 bits range
+
+// FIR Low Pass Filter 
+/*
+
+FIR filter designed with
+http://t-filter.appspot.com
+
+sampling frequency: 1000 Hz
+
+* 0 Hz - 30 Hz
+  gain = 1
+  desired ripple = 5 dB
+  actual ripple = 3.862326127235951 dB
+
+* 50 Hz - 500 Hz
+  gain = 0
+  desired attenuation = -40 dB
+  actual attenuation = -40.65454680997551 dB
+
+*/
+#define FIR_LP_COEFFS_NUMBER 57
 
 // PID CONTROL
 #define NO_BANG_BANG -1000.0f
@@ -69,17 +91,78 @@
 // *****************
 double outputMin = (double) OUTPUT_MIN;
 double outputMax = 0.2f * OUTPUT_MAX;
-double setPoint = PRESSURE_SETPONT;
-double pressure, pressureFiltered, output, error;
-float sensivity, pressureBar, vBat, offset;
+double setPoint = PRESSURE_SETPOINT;
+double pressure[FIR_LP_COEFFS_NUMBER], pressureFiltered, pressureBar, output, error;
+float sensivity, vBat, offset;
 uint16_t pwmOut, fpEnable;
 bool ledState = HIGH;
 float printSetPoint;
 
+static double fir_lp_coeffs[FIR_LP_COEFFS_NUMBER] = {
+  -0.006625935301879643,
+  -0.0046263466113658025,
+  -0.005985511353086233,
+  -0.007380821787402303,
+  -0.00873036796448379,
+  -0.00993950700883047,
+  -0.010896287757939917,
+  -0.011482281236332718,
+  -0.011587810884810515,
+  -0.011101547216457086,
+  -0.009910366222694235,
+  -0.007953295634674642,
+  -0.005157471110900287,
+  -0.0015077591607003994,
+  0.002991486627176334,
+  0.008296553290521154,
+  0.014325031893215599,
+  0.020957137106996516,
+  0.028040562259329046,
+  0.03539202153105998,
+  0.042803468083504215,
+  0.05005837859922911,
+  0.05692676448045463,
+  0.06318998799854678,
+  0.06863884571993356,
+  0.07308751616149889,
+  0.0763828896849263,
+  0.07840786342744005,
+  0.07909108371401496,
+  0.07840786342744005,
+  0.0763828896849263,
+  0.07308751616149889,
+  0.06863884571993356,
+  0.06318998799854678,
+  0.05692676448045463,
+  0.05005837859922911,
+  0.042803468083504215,
+  0.03539202153105998,
+  0.028040562259329046,
+  0.020957137106996516,
+  0.014325031893215599,
+  0.008296553290521154,
+  0.002991486627176334,
+  -0.0015077591607003994,
+  -0.005157471110900287,
+  -0.007953295634674642,
+  -0.009910366222694235,
+  -0.011101547216457086,
+  -0.011587810884810515,
+  -0.011482281236332718,
+  -0.010896287757939917,
+  -0.00993950700883047,
+  -0.00873036796448379,
+  -0.007380821787402303,
+  -0.005985511353086233,
+  -0.0046263466113658025,
+  -0.006625935301879643
+};
+
 // ***************
 // *** OBJECTS ***
 // ***************
-AutoPID myPID(&pressure, &setPoint, &output, outputMin, outputMax, KP, KI, KD);
+FIR<double, FIR_LP_COEFFS_NUMBER> fir_lp;
+AutoPID myPID(&pressureBar, &setPoint, &output, outputMin, outputMax, KP, KI, KD);
 
 // ********************
 // *** MAIN PROGRAM ***
@@ -105,6 +188,8 @@ void setup() {
   //setPoint = (double)((PRESSURE_SETPOINT * PS_SENSIVITY_DOCUMENTATION * (float)(ADC_MAX)*PS_VOLTAGE_DIVIDER * 100.0f) / VS_uC);
   offset = (double)((PS_OFFSET * PS_SENSIVITY_DOCUMENTATION * (float)(ADC_MAX)*PS_VOLTAGE_DIVIDER * 100.0f) / VS_uC);
 
+  // FIR Low Pass filter
+  fir_lp.setFilterCoeffs(fir_lp_coeffs);
   // Remove the bang bang control
   myPID.setOutputRange(outputMin, outputMax);
   myPID.setBangBang (NO_BANG_BANG, NO_BANG_BANG);
@@ -117,8 +202,11 @@ void loop() {
   // put your main code here, to run repeatedly:
   vBat = ((float)(analogRead(VBAT_SENSE_IN)) / (float)(ADC_MAX)) * VS_uC * VBAT_VOLTAGE_DIVIDER;
 
-  pressure = analogRead(V_PS_MEASURE_IN) - offset;
-  pressureBar = pressure * VS_uC / (ADC_MAX * PS_SENSIVITY_DOCUMENTATION * PS_VOLTAGE_DIVIDER * 100.0);
+  for (uint8_t i = 0; i < FIR_LP_COEFFS_NUMBER; i++){
+    pressure[i] = analogRead(V_PS_MEASURE_IN) - offset;
+  }
+  pressureFiltered = fir_lp.processReading(pressure[0]);
+  pressureBar = pressureFiltered * VS_uC / (ADC_MAX * PS_SENSIVITY_DOCUMENTATION * PS_VOLTAGE_DIVIDER * 100.0);
   
   outputMax = (double)((VFP_MAX / (vBat / 1000.0f)) * (float)(OUTPUT_MAX));
   myPID.setOutputRange(outputMin, outputMax);
