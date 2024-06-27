@@ -57,7 +57,7 @@
 // FUEL PUMP
 #define VFP_MAX 5.0f  // [V]
 #define OUTPUT_MIN 0
-#define OUTPUT_MAX 1024  // [] -> 10 bits range
+#define OUTPUT_MAX 1024 // [] -> 10 bits range
 
 // FIR Low Pass Filter
 /*
@@ -88,15 +88,13 @@ sampling frequency: 1000 Hz
 // *****************
 // *** VARIABLES ***
 // *****************
-double outputMin = (double)OUTPUT_MIN;
 double outputMax = 0.2f * OUTPUT_MAX;
-double setPoint = PRESSURE_SETPOINT;
-double pressure[FIR_LP_COEFFS_NUMBER], pressureFiltered, pressureBar, output, error;
-float sensivity, vBat, offset;
-uint16_t pwmOut, fpEnable;
+double offset;
+static double setPoint = PRESSURE_SETPOINT;
+double pressure[FIR_LP_COEFFS_NUMBER], pressureFiltered, pressureBar, error;
+float vBat, printSetPoint;
+uint16_t output, fpEnable;
 bool ledState = HIGH;
-float printSetPoint;
-
 static double fir_lp_coeffs[FIR_LP_COEFFS_NUMBER] = {
   -0.006625935301879643,
   -0.0046263466113658025,
@@ -161,6 +159,7 @@ static double fir_lp_coeffs[FIR_LP_COEFFS_NUMBER] = {
 // *** OBJECTS ***
 // ***************
 FIR<double, FIR_LP_COEFFS_NUMBER> fir_lp;
+PID_v2 myPID(KP, KI, KD, PID::Direct);
 
 // ********************
 // *** MAIN PROGRAM ***
@@ -184,44 +183,51 @@ void setup() {
   digitalWrite(LED_BUILTIN, HIGH);
 
   //setPoint = (double)((PRESSURE_SETPOINT * PS_SENSIVITY_DOCUMENTATION * (float)(ADC_MAX)*PS_VOLTAGE_DIVIDER * 100.0f) / VS_uC);
-  offset = (double)((PS_OFFSET * PS_SENSIVITY_DOCUMENTATION * (float)(ADC_MAX)*PS_VOLTAGE_DIVIDER * 100.0f) / VS_uC);
+  offset = (uint16_t)((PS_OFFSET * PS_SENSIVITY_DOCUMENTATION * (float)(ADC_MAX)*PS_VOLTAGE_DIVIDER * 100.0f) / VS_uC);
 
   // FIR Low Pass filter
   fir_lp.setFilterCoeffs(fir_lp_coeffs);
+
+  //PID Initialize
+  myPID.Start(pressureBar, OUTPUT_MIN, PRESSURE_SETPOINT);
 
   pwm(FP_PWM_OUT, PWM_FREQUENCY, (uint16_t)(output));
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  vBat = ((float)(analogRead(VBAT_SENSE_IN)) / (float)(ADC_MAX)) * VS_uC * VBAT_VOLTAGE_DIVIDER;
-
-  for (uint8_t i = 0; i < FIR_LP_COEFFS_NUMBER; i++) {
-    pressure[i] = analogRead(V_PS_MEASURE_IN) - offset;
-  }
-  pressureFiltered = fir_lp.processReading(pressure[0]);
-  pressureBar = pressureFiltered * VS_uC / (ADC_MAX * PS_SENSIVITY_DOCUMENTATION * PS_VOLTAGE_DIVIDER * 100.0);
-
-  outputMax = (double)((VFP_MAX / (vBat / 1000.0f)) * (float)(OUTPUT_MAX));
-
+ 
   fpEnable = analogRead(ECU_ENABLE_FP_IN);
   if (fpEnable <= FP_ENABLE_THRESHOLD) {
     //Serial.printf("Dentro\r\n");
+    vBat = ((float)(analogRead(VBAT_SENSE_IN)) / (float)(ADC_MAX)) * VS_uC * VBAT_VOLTAGE_DIVIDER;
+    outputMax = (double)((VFP_MAX / (vBat / 1000.0f)) * (float)(OUTPUT_MAX));
+    
+    for (uint8_t i = 0; i < FIR_LP_COEFFS_NUMBER; i++) {
+      pressure[i] = analogRead(V_PS_MEASURE_IN) - offset;
+    } 
+    pressureFiltered = fir_lp.processReading(pressure[0]);
+    pressureBar = pressureFiltered * VS_uC / (ADC_MAX * PS_SENSIVITY_DOCUMENTATION * PS_VOLTAGE_DIVIDER * 100.0);
+    
+    error = myPID.Run(pressureBar);
+    output = (uint16_t)((error / setPoint) * outputMax);
+
     printSetPoint = PRESSURE_SETPOINT;
   } else {
     //Serial.printf("Fuera\r\n");
-    output = outputMax;
+    output = OUTPUT_MIN;
     printSetPoint = 0.0f;
   }
 
-  if (output < OUTPUT_MIN)
-    output = OUTPUT_MIN;
-  else if (output > outputMax)
-    output = outputMax;
+  if(output < OUTPUT_MIN){
+    output = (uint16_t)OUTPUT_MIN;
+  } else if (output > outputMax){
+    output = (uint16_t)outputMax;
+  }
 
-  pwm(FP_PWM_OUT, PWM_FREQUENCY, (uint16_t)(output));
+  pwm(FP_PWM_OUT, PWM_FREQUENCY, output);
 
-  ledState = ((pressureBar >= (PRESSURE_SETPOINT - 0.1f)) && (pressureBar < (PRESSURE_SETPOINT + 0.1f))) ? LOW : HIGH;
+  ledState = ((pressureBar >= (PRESSURE_SETPOINT - 0.1f)) && (pressureBar <= (PRESSURE_SETPOINT + 0.1f))) ? LOW : HIGH;
   digitalWrite(LED_BUILTIN, ledState);
   Serial.printf("%0.2f|%0.2f\r\n", printSetPoint, pressureBar);
 }
