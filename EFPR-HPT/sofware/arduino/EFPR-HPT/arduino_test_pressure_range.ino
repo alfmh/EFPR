@@ -1,35 +1,4 @@
-/*
-****************************************************************************************************************
-*** Project: EFPR (Electronics Fuel Pressure Regulator)              Date:                                   
-*** Firmware version: v1.3                                                                                   ***
-*** Description: Design EFPR for an EFI (Electronic Fuel Injection) used to control a his fuel pump.         ***
-*** The purpose of this project is to replace the carburetor of a small combustion engine with an EFI sytem. ***
-*** This serves as a propulsion system for a UAV (Unmanned Areal Vehicle).                                   ***
-***                                                                  Company: https://www.loweheiser.com     ***
-***                                                                  Author: Alfonso Muñoz Hormigo           *** 
-****************************************************************************************************************
-*/
 #include <FIR.h>
-#include <PID_v2.h>
-/*
-*** FUEL PUMP ***
-    Magnetic coupled gear pump (seal-less):
-    HP-Tech DC Fuel Pump ZP25M14F https://www.hptech.at/english/products/dc-pump/
-    Specs:
-          - Nominal Voltage: 6 [V]
-          - Nominal Pressure: 3.5 [bar]
-          - Flow Rate: 190 [ml/min] = 11.4 [l/s]
-
-*** FUEL PRESSURE SENSOR ***
-    Analog fuel pressure sensor:
-    MPX5700DP  -> Upper limit = 7 [bar] https://www.farnell.com/datasheets/2291495.pdf
-    Specs:
-          - Sensitivity of the sensor = 6.4 [mV/KPa] at VS = 5 [V]   
-
-*** MICROCONTROLLER ***
-    Seeeduino XIAO I/O works at 3.3 [V] https://wiki.seeedstudio.com/Seeeduino-XIAO/
-    VS = 5 [V]
-*/
 
 // *****************************************
 // *** I/O MICROCONTROLLER CONFIGURATION ***
@@ -55,9 +24,9 @@
 #define PS_VOLTAGE_DIVIDER 0.6f          // [] -> 3.3k / 5.5k = 0.6
 
 // FUEL PUMP
-#define VFP_MAX 5.0f  // [V]
+#define VFP 5.0f  // [V]
 #define OUTPUT_MIN 0
-#define OUTPUT_MAX 1024 // [] -> 10 bits range
+#define OUTPUT_MAX 1024  // [] -> 10 bits range
 
 // FIR Low Pass Filter
 /*
@@ -80,21 +49,14 @@ sampling frequency: 1000 Hz
 */
 #define FIR_LP_COEFFS_NUMBER 57
 
-// PID CONTROL
-#define KP 1.0f  //1.7
-#define KI 0.0f  //1.2
-#define KD 0.0f
-
 // *****************
 // *** VARIABLES ***
 // *****************
-double outputMax = 0.2f * OUTPUT_MAX;
-double offset;
+static double offset;
 static double setPoint = PRESSURE_SETPOINT;
-double pressure[FIR_LP_COEFFS_NUMBER], pressureFiltered, pressureBar, error;
-float vBat, printSetPoint;
+double pressure[FIR_LP_COEFFS_NUMBER], pressureFiltered, pressureBar;
+float vBat;
 uint16_t output, fpEnable;
-bool ledState = HIGH;
 static double fir_lp_coeffs[FIR_LP_COEFFS_NUMBER] = {
   -0.006625935301879643,
   -0.0046263466113658025,
@@ -159,11 +121,7 @@ static double fir_lp_coeffs[FIR_LP_COEFFS_NUMBER] = {
 // *** OBJECTS ***
 // ***************
 FIR<double, FIR_LP_COEFFS_NUMBER> fir_lp;
-PID_v2 myPID(KP, KI, KD, PID::Direct);
 
-// ********************
-// *** MAIN PROGRAM ***
-// ********************
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
@@ -179,17 +137,11 @@ void setup() {
   analogWrite(VBAT_SENSE_IN, 0);
   pinMode(FP_PWM_OUT, OUTPUT);
   digitalWrite(FP_PWM_OUT, LOW);
-  pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(LED_BUILTIN, HIGH);
 
-  //setPoint = (double)((PRESSURE_SETPOINT * PS_SENSIVITY_DOCUMENTATION * (float)(ADC_MAX)*PS_VOLTAGE_DIVIDER * 100.0f) / VS_uC);
   offset = (uint16_t)((PS_OFFSET * PS_SENSIVITY_DOCUMENTATION * (float)(ADC_MAX)*PS_VOLTAGE_DIVIDER * 100.0f) / VS_uC);
 
   // FIR Low Pass filter
   fir_lp.setFilterCoeffs(fir_lp_coeffs);
-
-  //PID Initialize
-  myPID.Start(pressureBar, OUTPUT_MIN, PRESSURE_SETPOINT);
 
   pwm(FP_PWM_OUT, PWM_FREQUENCY, (uint16_t)(output));
 }
@@ -200,34 +152,20 @@ void loop() {
   if (fpEnable <= FP_ENABLE_THRESHOLD) {
     //Serial.printf("Dentro\r\n");
     vBat = ((float)(analogRead(VBAT_SENSE_IN)) / (float)(ADC_MAX)) * VS_uC * VBAT_VOLTAGE_DIVIDER;
-    outputMax = (double)((VFP_MAX / (vBat / 1000.0f)) * (float)(OUTPUT_MAX));
-    
+    output =(uint16_t) ((double)((VFP / (vBat / 1000.0f)) * (float)(OUTPUT_MAX)));
+
     for (uint8_t i = 0; i < FIR_LP_COEFFS_NUMBER; i++) {
       pressure[i] = analogRead(V_PS_MEASURE_IN) - offset;
-    } 
+    }
     pressureFiltered = fir_lp.processReading(pressure[0]);
     pressureBar = pressureFiltered * VS_uC / (ADC_MAX * PS_SENSIVITY_DOCUMENTATION * PS_VOLTAGE_DIVIDER * 100.0);
-    
-    error = myPID.Run(pressureBar);
-    output = (uint16_t)((error / setPoint) * outputMax);
 
-    printSetPoint = PRESSURE_SETPOINT;
   } else {
     //Serial.printf("Fuera\r\n");
     output = OUTPUT_MIN;
-    printSetPoint = 0.0f;
-  }
-
-  if(output < OUTPUT_MIN){
-    output = (uint16_t)OUTPUT_MIN;
-  } else if (output > outputMax){
-    output = (uint16_t)outputMax;
   }
 
   pwm(FP_PWM_OUT, PWM_FREQUENCY, output);
+  Serial.printf("Output: %d |Vout: %0.2fmv | Pressure: %0.2fbar\r\n", output, VFP, pressureBar);
 
-  ledState = ((pressureBar >= (PRESSURE_SETPOINT - 0.1f)) && (pressureBar <= (PRESSURE_SETPOINT + 0.1f))) ? LOW : HIGH;
-  digitalWrite(LED_BUILTIN, ledState);
-  
-  Serial.printf("%0.2f|%0.2f\r\n", printSetPoint, pressureBar);
 }
