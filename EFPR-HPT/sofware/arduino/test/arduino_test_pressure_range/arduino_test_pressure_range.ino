@@ -19,7 +19,6 @@
 #define PWM_FREQUENCY 100000.0f          // [Hz]
 #define VS_DOCUMENTATION 5000.0f         // [mV]
 #define PS_SENSIVITY_DOCUMENTATION 6.4f  // [mV/KPa]
-#define PRESSURE_SETPOINT 2.5f           // [bar]
 #define PS_OFFSET 0.31f                  // [bar]
 #define PS_VOLTAGE_DIVIDER 0.6f          // [] -> 3.3k / 5.5k = 0.6
 
@@ -52,10 +51,8 @@ sampling frequency: 1000 Hz
 // *****************
 // *** VARIABLES ***
 // *****************
-static double offset;
-static double setPoint = PRESSURE_SETPOINT;
+static double offset, vBat;
 double pressure[FIR_LP_COEFFS_NUMBER], pressureFiltered, pressureBar;
-float vBat;
 uint16_t output, fpEnable;
 static double fir_lp_coeffs[FIR_LP_COEFFS_NUMBER] = {
   -0.006625935301879643,
@@ -138,7 +135,7 @@ void setup() {
   pinMode(FP_PWM_OUT, OUTPUT);
   digitalWrite(FP_PWM_OUT, LOW);
 
-  offset = (uint16_t)((PS_OFFSET * PS_SENSIVITY_DOCUMENTATION * (float)(ADC_MAX)*PS_VOLTAGE_DIVIDER * 100.0f) / VS_uC);
+  offset = (PS_OFFSET * PS_SENSIVITY_DOCUMENTATION * (float)(ADC_MAX)*PS_VOLTAGE_DIVIDER * 100.0f) / VS_uC;
 
   // FIR Low Pass filter
   fir_lp.setFilterCoeffs(fir_lp_coeffs);
@@ -152,7 +149,7 @@ void loop() {
   if (fpEnable <= FP_ENABLE_THRESHOLD) {
     //Serial.printf("Dentro\r\n");
     vBat = ((float)(analogRead(VBAT_SENSE_IN)) / (float)(ADC_MAX)) * VS_uC * VBAT_VOLTAGE_DIVIDER;
-    output =(uint16_t) ((double)((VFP / (vBat / 1000.0f)) * (float)(OUTPUT_MAX)));
+    output = (uint16_t)((double)((VFP / (vBat / 1000.0f)) * (float)(OUTPUT_MAX)));
 
     for (uint8_t i = 0; i < FIR_LP_COEFFS_NUMBER; i++) {
       pressure[i] = analogRead(V_PS_MEASURE_IN) - offset;
@@ -167,5 +164,4 @@ void loop() {
 
   pwm(FP_PWM_OUT, PWM_FREQUENCY, output);
   Serial.printf("Output: %d |Vout: %0.2fmv | Pressure: %0.2fbar\r\n", output, VFP, pressureBar);
-
 }

@@ -57,7 +57,7 @@
 // FUEL PUMP
 #define VFP_MAX 5.0f  // [V]
 #define OUTPUT_MIN 0
-#define OUTPUT_MAX 1024 // [] -> 10 bits range
+#define OUTPUT_MAX 1024  // [] -> 10 bits range
 
 // FIR Low Pass Filter
 /*
@@ -201,13 +201,13 @@ void loop() {
     //Serial.printf("Dentro\r\n");
     vBat = ((float)(analogRead(VBAT_SENSE_IN)) / (float)(ADC_MAX)) * VS_uC * VBAT_VOLTAGE_DIVIDER;
     outputMax = (double)((VFP_MAX / (vBat / 1000.0f)) * (float)(OUTPUT_MAX));
-    
+
     for (uint8_t i = 0; i < FIR_LP_COEFFS_NUMBER; i++) {
       pressure[i] = analogRead(V_PS_MEASURE_IN) - offset;
-    } 
+    }
     pressureFiltered = fir_lp.processReading(pressure[0]);
     pressureBar = pressureFiltered * VS_uC / (ADC_MAX * PS_SENSIVITY_DOCUMENTATION * PS_VOLTAGE_DIVIDER * 100.0);
-    
+
     error = myPID.Run(pressureBar);
     output = (uint16_t)((error / setPoint) * outputMax);
 
@@ -218,9 +218,9 @@ void loop() {
     printSetPoint = 0.0f;
   }
 
-  if(output < OUTPUT_MIN){
+  if (output < OUTPUT_MIN) {
     output = (uint16_t)OUTPUT_MIN;
-  } else if (output > outputMax){
+  } else if (output > outputMax) {
     output = (uint16_t)outputMax;
   }
 
@@ -228,6 +228,6 @@ void loop() {
 
   ledState = ((pressureBar >= (PRESSURE_SETPOINT - 0.1f)) && (pressureBar <= (PRESSURE_SETPOINT + 0.1f))) ? LOW : HIGH;
   digitalWrite(LED_BUILTIN, ledState);
-  
+
   Serial.printf("%0.2f|%0.2f\r\n", printSetPoint, pressureBar);
 }
