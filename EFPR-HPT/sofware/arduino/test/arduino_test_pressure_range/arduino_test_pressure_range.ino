@@ -163,5 +163,5 @@ void loop() {
   }
 
   pwm(FP_PWM_OUT, PWM_FREQUENCY, output);
-  Serial.printf("Output: %d |Vout: %0.2fmv | Pressure: %0.2fbar\r\n", output, VFP, pressureBar);
+  Serial.printf("Output: %d |Vout: %0.2fV | Pressure: %0.2fbar\r\n", output, VFP, pressureBar);
 }
