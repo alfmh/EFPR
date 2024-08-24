@@ -47,7 +47,7 @@
 #define VS_uC 3300.0f               // [mV]
 #define VBAT_VOLTAGE_DIVIDER 4.94f  // [] -> (10.2k / 50.4k) = 1 / 4.94
 #define FP_ENABLE_THRESHOLD 2000
-#define PWM_FREQUENCY 100000.0f          // [Hz]
+#define PWM_FREQUENCY 10000.0f          // [Hz]
 #define VS_DOCUMENTATION 5000.0f         // [mV]
 #define PS_SENSIVITY_DOCUMENTATION 6.4f  // [mV/KPa]
 #define PRESSURE_SETPOINT 2.5f           // [bar]
@@ -56,6 +56,7 @@
 
 // FUEL PUMP
 #define VFP_MAX 5.0f  // [V]
+#define PRESSUREFP_MAX 6.5f // [bar] at VFP_MAX
 #define OUTPUT_MIN 0
 #define OUTPUT_MAX 1024  // [] -> 10 bits range
 
@@ -81,8 +82,8 @@ sampling frequency: 1000 Hz
 #define FIR_LP_COEFFS_NUMBER 57
 
 // PID CONTROL
-#define KP 1.0f  //1.7
-#define KI 0.0f  //1.2
+#define KP 0.01f  //1.7
+#define KI 3.0f  //1.2
 #define KD 0.0f
 
 // *****************
@@ -209,7 +210,7 @@ void loop() {
     pressureBar = pressureFiltered * VS_uC / (ADC_MAX * PS_SENSIVITY_DOCUMENTATION * PS_VOLTAGE_DIVIDER * 100.0);
 
     error = myPID.Run(pressureBar);
-    output = (uint16_t)((error / setPoint) * outputMax);
+    output = (uint16_t)((error / PRESSUREFP_MAX) * outputMax);
 
     printSetPoint = PRESSURE_SETPOINT;
   } else {
@@ -223,11 +224,12 @@ void loop() {
   } else if (output > outputMax) {
     output = (uint16_t)outputMax;
   }
-
+  //Serial.printf("SetPoint: %0.2f bar | Pressure: %0.2f bar | Error: %0.2f | Output: %d \r\n", printSetPoint, pressureBar, error, output);
   pwm(FP_PWM_OUT, PWM_FREQUENCY, output);
 
-  ledState = ((pressureBar >= (PRESSURE_SETPOINT - 0.1f)) && (pressureBar <= (PRESSURE_SETPOINT + 0.1f))) ? LOW : HIGH;
+  ledState = ((pressureBar >= (PRESSURE_SETPOINT *(1 - 0.01f))) && (pressureBar <= (PRESSURE_SETPOINT * (1 + 0.01f)))) ? LOW : HIGH;
   digitalWrite(LED_BUILTIN, ledState);
 
   Serial.printf("%0.2f|%0.2f\r\n", printSetPoint, pressureBar);
+  
 }
